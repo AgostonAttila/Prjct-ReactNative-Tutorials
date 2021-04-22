@@ -14,7 +14,7 @@ import {
 import Animated from "react-native-reanimated";
 import { Colors } from "react-native/Libraries/NewAppScreen";
 
-import {Profiles} from "../components"
+import { Profiles } from "../components";
 
 import { dummyData, icons, images, COLORS, SIZES, FONTS } from "../constants";
 
@@ -149,7 +149,7 @@ const Home = ({ navigation }) => {
                           }}
                         />
                       </View>
-                      <Text style={{ marginLeft: SIZES.base, color: Colors.white, ...FONTS.h3 }}>Play Now</Text>
+                      <Text style={{ marginLeft: SIZES.base, color: COLORS.white, ...FONTS.h3 }}>Play Now</Text>
                     </View>
                     {item.stillWatching.lenght > 0 && (
                       <View
@@ -157,7 +157,7 @@ const Home = ({ navigation }) => {
                           justifyContent: "center",
                         }}
                       >
-                        <Text style={{ color: Colors.white, ...FONTS.h4 }}>Still Watching</Text>
+                        <Text style={{ color: COLORS.white, ...FONTS.h4 }}>Still Watching</Text>
                         <Profiles profiles={item.stillWatching} />
                       </View>
                     )}
@@ -171,9 +171,126 @@ const Home = ({ navigation }) => {
     );
   }
 
+  const dotPosition = Animated.divide(newSeasonScrollX, SIZES.width);
+
+  function renderDots() {
+    return (
+      <View
+        style={{
+          alignItems: "center",
+          justifyContent: "center",
+          flexdirection: "row",
+          marginTop: SIZES.padding,
+        }}
+      >
+        {dummyData.newSeason.map((item, index) => {
+          const opacity = dotPosition.interpolate({
+            inputRange: [index - 1, index, index + 1],
+            outputRange: [0.3, 1, 0.3],
+            extrapolate: "clamp",
+          });
+
+          const dotWith = dotPosition.interpolate({
+            inputRange: [index - 1, index, index + 1],
+            outputRange: [6, 20, 6],
+            extrapolate: "clamp",
+          });
+
+          const dotColor = dotPosition.interpolate({
+            inputRange: [index - 1, index, index + 1],
+            outputRange: [COLORS.lightGray, COLORS.primary, COLORS.lightGray],
+            extrapolate: "clamp",
+          });
+
+          return (
+            <Animated.View
+              key={`dot-${index}`}
+              opacity={opacity}
+              style={{
+                borderRadius: SIZES.radius,
+                marginHorizontal: 3,
+                width: dotWith,
+                height: 6,
+                backgroundColor: dotColor,
+              }}
+            />
+          );
+        })}
+      </View>
+    );
+  }
+
+  function renderContinueWatchingSection() {
+    return (
+      <View
+        style={{
+          marginTop: SIZES.padding,
+        }}
+      >
+        <View
+          style={{
+            flexDirection: "row",
+            paddingHorizontal: SIZES.padding,
+            alignItems: "center",
+          }}
+        >
+          <Text style={{ flex: 1, color: Colors.white, ...FONTS.h2 }}>Continue Watching</Text>
+          <Image source={icons.right_arrow} style={{ width: 20, height: 20, tintColor: COLORS.primary }} />
+        </View>
+
+        <FlatList
+          horizontal
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{
+            marginTop: SIZES.padding,
+          }}
+          data={dummyData.continueWatching}
+          keyExtractor={(item) => `${item.id}`}
+          renderItem={({ item, index }) => {
+            return (
+              <TouchableWithoutFeedback onPress={() => navigation.navigate("MovieDetail", { selectedMovie: item })}>
+                <View
+                  style={{
+                    marginLeft: 0 ? SIZES.padding : 20,
+                    marginRight: index == dummyData.continueWatching.lenght - 1 ? SIZES.padding : 0,
+                  }}
+                >
+                  <Image
+                    source={item.thumbnail}
+                    resizeMode="cover"
+                    style={{
+                      width: SIZES.width / 3,
+                      height: SIZES.width / 3 + 60,
+                      borderRadius: 20,
+                    }}
+                  />
+                  <Text style={{ marginTop: SIZES.base, color: Colors.white, ...FONTS.h4 }}>{item.name}</Text>
+
+                  <ProgressBar
+                    containerStyle={{
+                      marginTop: SIZES.radius                   
+                    }}
+                    barStyle={{
+                      height: 3,
+                    }}
+                    barPercententage={item.overallProgress}
+                  />
+                </View>
+              </TouchableWithoutFeedback>
+            );
+          }}
+        />
+      </View>
+    );
+  }
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: COLORS.black }}>
-      <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>{renderNewSeasonSection()}</ScrollView>
+      <ScrollView contentContainerStyle={{ paddingBottom: 100 }}>
+        {renderNewSeasonSection()}
+        {renderDots()}
+        {renderContinueWatchingSection()}
+      </ScrollView>
     </SafeAreaView>
   );
 };

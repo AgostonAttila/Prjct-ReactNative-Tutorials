@@ -42,3 +42,5 @@ const styles = StyleSheet.create({
     borderColor: COLORS.black,
   },
 });
+
+export default Profiles;
